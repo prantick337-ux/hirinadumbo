@@ -47,6 +47,8 @@ p{font-size:clamp(17px,2.5vw,21px);line-height:1.8;margin:0;max-width:550px}
 .image-slot{width:min(420px,100%);min-height:210px;border:1.5px dashed #d8b7bd;border-radius:16px;background:linear-gradient(135deg,#fff8f6,#f7e5e8);display:grid;place-items:center;padding:22px;margin-top:22px;color:#a1847c;font:13px/1.6 Arial,sans-serif}
 .image-slot img{display:block;max-width:100%;max-height:390px;width:auto;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 8px 24px #80565d18}.image-slot img.hidden{display:none}
 .controls{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 4px}
+.sound-row{display:flex;justify-content:center;margin-top:-4px}
+.sound-toggle{font:12px Arial,sans-serif;letter-spacing:.04em;padding:9px 16px}
 #count{font:12px Arial,sans-serif;letter-spacing:.12em;color:#9b847b}
 .small{background:transparent;color:#9b716e;box-shadow:none;border:1px solid #dfc8c0}
 .small:hover{background:#f4e6e2;color:#87575a}
@@ -120,7 +122,16 @@ p{font-size:clamp(17px,2.5vw,21px);line-height:1.8;margin:0;max-width:550px}
    <span id="count">01 / 05</span>
    <button id="nextBtn">Turn page →</button>
  </nav>
+ <div class="sound-row">
+   <button class="small sound-toggle" id="soundToggle" type="button" aria-pressed="true">♫ Sound on</button>
+ </div>
 </main>
+
+<!-- Put these three audio files beside index.html in your GitHub repository. -->
+<audio id="pageFlipAudio" src="page-flip.mp3" preload="auto"></audio>
+<audio id="clickAudio" src="click.mp3" preload="auto"></audio>
+<audio id="starryAudio" src="starry-effects.mp3" preload="auto" loop></audio>
+
 <script>
 
 // Decorative stars use requestAnimationFrame, so motion follows the device's
@@ -172,6 +183,44 @@ byTheWayImage.addEventListener('error',()=>{
   byTheWayImage.classList.add('hidden');
   imageFallback.classList.remove('hidden');
 });
+// Audio files are external assets in the same GitHub folder as index.html.
+const pageFlipAudio = document.getElementById('pageFlipAudio');
+const clickAudio = document.getElementById('clickAudio');
+const starryAudio = document.getElementById('starryAudio');
+const soundToggle = document.getElementById('soundToggle');
+let soundEnabled = true;
+
+function playSound(audio, volume=0.45) {
+  if (!soundEnabled || !audio) return;
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = volume;
+    const playback = audio.play();
+    if (playback && typeof playback.catch === 'function') playback.catch(()=>{});
+  } catch (_) {}
+}
+function startStarrySound() {
+  if (!soundEnabled) return;
+  starryAudio.volume = 0.16;
+  const playback = starryAudio.play();
+  if (playback && typeof playback.catch === 'function') playback.catch(()=>{});
+}
+soundToggle.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  soundToggle.textContent = soundEnabled ? '♫ Sound on' : '♫ Sound off';
+  soundToggle.setAttribute('aria-pressed', String(soundEnabled));
+  if (soundEnabled) startStarrySound();
+  else { pageFlipAudio.pause(); clickAudio.pause(); starryAudio.pause(); }
+});
+
+// Small UI clicks use the click sound. Page navigation has its own paper sound.
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button || button.id === 'soundToggle' || button.id === 'backBtn' || button.id === 'nextBtn') return;
+  playSound(clickAudio, 0.32);
+});
+
 const PASSWORD = "imnigger";
 const lock = document.getElementById('lock');
 const bookWrap = document.getElementById('bookWrap');
@@ -179,6 +228,7 @@ document.getElementById('unlockForm').addEventListener('submit', e => {
   e.preventDefault();
   if (document.getElementById('password').value === PASSWORD) {
     lock.style.display='none'; bookWrap.style.display='block';
+    startStarrySound();
   } else {
     document.getElementById('error').textContent='Hmm, that is not the right password. Try again.';
   }
@@ -189,6 +239,7 @@ let current=0;
 pages.forEach((p,i)=>{p.style.zIndex=String(pages.length-i);});
 function showPage(n){
   const target=Math.max(0,Math.min(pages.length-1,n));
+  if (target !== current) playSound(pageFlipAudio, 0.55);
   if(target>current){ for(let i=current;i<target;i++) pages[i].classList.add('turned'); }
   if(target<current){ for(let i=current-1;i>=target;i--) pages[i].classList.remove('turned'); }
   current=target;
