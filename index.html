@@ -45,7 +45,7 @@ p{font-size:clamp(17px,2.5vw,21px);line-height:1.8;margin:0;max-width:550px}
 .reveal{margin-top:20px;padding:17px 22px;background:linear-gradient(135deg,#f8e8e8,#f5e1e5);border:1px solid #efd3d8;border-radius:14px;font-size:clamp(19px,3vw,24px);line-height:1.5;max-width:440px;box-shadow:0 8px 22px #b77c8818;animation:softPop .45s both}
 .hidden{display:none!important}
 .image-slot{width:min(420px,100%);min-height:210px;border:1.5px dashed #d8b7bd;border-radius:16px;background:linear-gradient(135deg,#fff8f6,#f7e5e8);display:grid;place-items:center;padding:22px;margin-top:22px;color:#a1847c;font:13px/1.6 Arial,sans-serif}
-.image-slot img{max-width:100%;max-height:330px;object-fit:contain;border-radius:12px}
+.image-slot img{display:block;max-width:100%;max-height:390px;width:auto;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 8px 24px #80565d18}.image-slot img.hidden{display:none}
 .controls{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 4px}
 #count{font:12px Arial,sans-serif;letter-spacing:.12em;color:#9b847b}
 .small{background:transparent;color:#9b716e;box-shadow:none;border:1px solid #dfc8c0}
@@ -101,9 +101,10 @@ p{font-size:clamp(17px,2.5vw,21px);line-height:1.8;margin:0;max-width:550px}
   <section class="page" data-page="3">
     <div class="kicker">page four · one more thing</div>
     <h2>By the way…</h2>
-    <p>...</p>
+    <p>There's something I made that I want you to see.</p>
     <div class="image-slot" id="imageSlot">
-      Your image will go here ♡<br>When you send me the picture, I can place it on this page.
+      <span id="imageFallback">Your image will go here ♡<br>Upload <strong>by-the-way.png</strong> beside index.html in your GitHub repository.</span>
+      <img id="byTheWayImage" src="by-the-way.png" alt="A little something, by the way" class="hidden">
     </div>
   </section>
 
@@ -161,6 +162,16 @@ p{font-size:clamp(17px,2.5vw,21px);line-height:1.8;margin:0;max-width:550px}
   document.addEventListener('pointerdown',e=>burst(e.clientX,e.clientY),{passive:true});
 })();
 
+const byTheWayImage=document.getElementById('byTheWayImage');
+const imageFallback=document.getElementById('imageFallback');
+byTheWayImage.addEventListener('load',()=>{
+  byTheWayImage.classList.remove('hidden');
+  imageFallback.classList.add('hidden');
+});
+byTheWayImage.addEventListener('error',()=>{
+  byTheWayImage.classList.add('hidden');
+  imageFallback.classList.remove('hidden');
+});
 const PASSWORD = "imnigger";
 const lock = document.getElementById('lock');
 const bookWrap = document.getElementById('bookWrap');
